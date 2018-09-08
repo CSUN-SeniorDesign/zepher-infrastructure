@@ -1,7 +1,7 @@
-Documentations:
-Purchase a Domain	
-Setup AWS Virtual Private Cloud (VPC)	
-Installing WordPress using Amazon Web Services Ubuntu Server	
-Setup for Domain using Route53	
-Generating TLS Certificates	
-Deploying the Hugo Website
+Documentations:<br>
+Purchase a Domain	<br>
+Setup AWS Virtual Private Cloud (VPC)	<br>
+Installing WordPress using Amazon Web Services Ubuntu Server	<br>
+Setup for Domain using Route53	<br>
+Generating TLS Certificates	<br>
+Deploying the Hugo Website<br>
