@@ -1,0 +1,7 @@
+#!/bin/bash
+
+cd $HOME/zephyr/zephyr-blog/Project1/zephyr
+rm -rf public/*
+rm -rf public.tar.gz
+hugo
+tar -czf public.tar.gz public/*

@@ -1,0 +1,39 @@
+---
+- hosts: local
+  tasks:
+        - name: Clear git destination 
+          
+          file: 
+                  path: "{{lookup('env','HOME')}}/zephyr/zephyr-blog"
+                  state: absent
+
+        - name: Clone repo
+
+          git:     
+                  repo: https://github.com/CSUN-SeniorDesign/zephyr-blog.git
+                  dest: "{{lookup('env','HOME')}}/zephyr/zephyr-blog"
+                  version: master
+                  accept_hostkey: yes
+                  key_file: "{{ lookup('env', 'HOME') }}/PAT" #in order for this script to work, every user must have a PAT file in their HOME directory with their github personal access token
+        - name: Install Hugo
+          apt:
+                  name: hugo
+                  state: present
+
+        - name: Run hugotar.exe script
+
+          command: $HOME/hugotar.exe #this script deletes the contents of the public file in the repo, remakes them to the latest version with hugo, then zips them up into a tarball
+
+
+- hosts: webserver
+  become: yes
+  become_user: root
+  tasks:
+        - name: Clear html file
+          command: rm -fr html/*
+
+        - name: Unzip public tarball into html
+          unarchive:
+                  src: "{{lookup('env','HOME')}}/zephyr/zephyr-blog/Project1/zephyr/public.tar.gz"
+                  dest: /var/www/html/
+
