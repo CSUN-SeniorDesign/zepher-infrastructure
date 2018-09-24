@@ -13,28 +13,79 @@ draft: false
 
 		Overview:
 			By the end of this tutorial the reader should be to able to setup following in AWS using just Terraform:
-				1.       Install Terraform in Windows Operating Systems.
-				2.       Install aws cli.
-				3.       Creating one IAM administrator permissions user with programmatic access.
-				4.       Configure aws cli
-				5.       Building infrastructure using terraform:
-				-          A VPC  with size /16 CIDR block.In this case we are using 172.31.0.0/16 CIDR block.
-				-          1 Internet Gateway (IG) attached to zephyrvpc.
-				-          3 public subnets in 3 different availability zones (AZ) [172.31.0.0/22, 172.31.4.0/22, 172.31.8.0/22]
-				-          3 private subnets in 3 different availability zones (AZ)  [172.31.16.0/22, 172.31.32.0/22, 172.31.48.0/22]
-				-          1 route table for the public subnets with added route through the internet gateway created earlier.
-				-          1 route table for the private subnets.
-				-          Associate public subnets to public route table.
-				-          Associate public subnets to public route table.
-				-          Create bastion host for ssh purposes.
-				-          Create NAT instance for internet for private resources
-				-          Edit the public route table with new route.
- 
- 
+
+				- Create 2 linux servers in private subnets
+			
 		Prerequisites:
 			Computer with Windows Operating System
 			AWS account
         		Create one as a student for $100 free credit: https://www.awseducate.com/registration#APP_TYPE
  
 		Steps:
-			1. 
+			1. This first step will create the linux security group with the allowed ports and ip address they are able to use.
+				resource "aws_security_group" "linux-securitygroup" {  
+					name        = "linux"
+					description = "Allow SSH traffic to bastion"
+					vpc_id      = "${aws_vpc.zephyrvpc.id}"
+
+					ingress {
+						from_port   = 22
+						to_port     = 22
+						protocol    = "tcp"
+						cidr_blocks = ["172.31.0.0/16"]
+					}
+					ingress {
+						from_port   = 80
+						to_port     = 80
+						protocol    = "tcp"
+						cidr_blocks = ["172.31.0.0/16"]
+					}
+					egress {
+						from_port   = 0
+						to_port     = 0
+						protocol    = "-1"
+						cidr_blocks = ["0.0.0.0/0"]
+					}
+
+				}
+
+			2. This will create the first private subnet linux server.
+				
+				resource "aws_instance" "linux1" {
+					ami = "ami-51537029"
+					availability_zone = "us-west-2a"
+					instance_type = "t2.micro"
+					key_name = "newpair"
+					subnet_id = "${aws_subnet.zephyrprs1.id}"
+					vpc_security_group_ids = ["${aws_security_group.linux-securitygroup.id}"]
+		
+					depends_on = ["aws_security_group.linux-securitygroup"]
+	
+
+  
+					tags {
+						Name = "linux1 Instance"
+					}
+				}
+				
+			3. This will create the second private subnet linux server.
+				
+				resource "aws_instance" "linux2" {
+					ami = "ami-51537029"
+					availability_zone = "us-west-2a"
+					instance_type = "t2.micro"
+					key_name = "newpair"
+					subnet_id = "${aws_subnet.zephyrprs.id}"
+					vpc_security_group_ids = ["${aws_security_group.linux-securitygroup.id}"]
+		
+					depends_on = ["aws_security_group.linux-securitygroup"]
+	
+
+  
+					tags {
+						Name = "linux2 Instance"
+					}
+				}
+
+
+
