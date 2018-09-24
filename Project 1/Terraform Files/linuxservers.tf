@@ -1,4 +1,3 @@
-
 resource "aws_security_group" "linux-securitygroup" {  
   name        = "linux"
   description = "Allow SSH traffic to bastion"
