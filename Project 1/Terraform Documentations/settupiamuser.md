@@ -13,28 +13,62 @@ draft: false
 
 		Overview:
 			By the end of this tutorial the reader should be to able to setup following in AWS using just Terraform:
-				1.       Install Terraform in Windows Operating Systems.
-				2.       Install aws cli.
-				3.       Creating one IAM administrator permissions user with programmatic access.
-				4.       Configure aws cli
-				5.       Building infrastructure using terraform:
-				-          A VPC  with size /16 CIDR block.In this case we are using 172.31.0.0/16 CIDR block.
-				-          1 Internet Gateway (IG) attached to zephyrvpc.
-				-          3 public subnets in 3 different availability zones (AZ) [172.31.0.0/22, 172.31.4.0/22, 172.31.8.0/22]
-				-          3 private subnets in 3 different availability zones (AZ)  [172.31.16.0/22, 172.31.32.0/22, 172.31.48.0/22]
-				-          1 route table for the public subnets with added route through the internet gateway created earlier.
-				-          1 route table for the private subnets.
-				-          Associate public subnets to public route table.
-				-          Associate public subnets to public route table.
-				-          Create bastion host for ssh purposes.
-				-          Create NAT instance for internet for private resources
-				-          Edit the public route table with new route.
- 
- 
+			
+				- Create a terraform automation to create aws iam users
+		
 		Prerequisites:
 			Computer with Windows Operating System
 			AWS account
         		Create one as a student for $100 free credit: https://www.awseducate.com/registration#APP_TYPE
  
 		Steps:
-			1. 
+			1.  Create a tf extension file with any name that you are able to identify as the iam user
+			2. In the file provide the aws region, secret key and access key.
+			
+					provider "aws" {
+						access_key = "${var.aws_access_key}"
+						secret_key = "${var.aws_secret_key}"
+						region     = "${var.region}"
+					}
+					
+			3. Create group administrators in the tf file. 
+
+					resource "aws_iam_group" "zephyradmin" {
+						name = "zephyradmin"
+					}
+					
+			4. Create the iam policy so that the users have admin access.
+			
+					resource "aws_iam_policy_attachment" "zephyradmin-attach" {
+						name = "zephyradmin-attach"
+						groups = ["${aws_iam_group.zephyradmin.name}"]
+						policy_arn = "arn:aws:iam::aws:policy/AdministratorAccess"
+					}
+					
+			5. In this part the users will be created this is part of our script that created a user for each individual.
+					
+					resource "aws_iam_user" "adminusr1" {
+						name = "Danielp1"
+					}
+					resource "aws_iam_user" "adminusr2" {
+						name = "Tonnyp1"
+					}
+					resource "aws_iam_user" "adminusr3" {
+						name = "Haydenp1"
+					}
+					resource "aws_iam_user" "adminusr4" {
+						name = "Neelp1"
+					}
+			6. Final step if it is required we can add the users into a group.
+			
+					resource "aws_iam_group_membership" "zephyradmin-users" {
+						name = "zephyradmin-users"
+						users = [
+							"${aws_iam_user.adminusr1.name}",
+							"${aws_iam_user.adminusr2.name}",
+							"${aws_iam_user.adminusr3.name}",
+							"${aws_iam_user.adminusr4.name}",
+
+						]
+						group = "${aws_iam_group.zephyradmin.name}"
+					}

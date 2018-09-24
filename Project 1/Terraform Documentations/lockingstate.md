@@ -13,28 +13,61 @@ draft: true
 
 		Overview:
 			By the end of this tutorial the reader should be to able to setup following in AWS using just Terraform:
-				1.       Install Terraform in Windows Operating Systems.
-				2.       Install aws cli.
-				3.       Creating one IAM administrator permissions user with programmatic access.
-				4.       Configure aws cli
-				5.       Building infrastructure using terraform:
-				-          A VPC  with size /16 CIDR block.In this case we are using 172.31.0.0/16 CIDR block.
-				-          1 Internet Gateway (IG) attached to zephyrvpc.
-				-          3 public subnets in 3 different availability zones (AZ) [172.31.0.0/22, 172.31.4.0/22, 172.31.8.0/22]
-				-          3 private subnets in 3 different availability zones (AZ)  [172.31.16.0/22, 172.31.32.0/22, 172.31.48.0/22]
-				-          1 route table for the public subnets with added route through the internet gateway created earlier.
-				-          1 route table for the private subnets.
-				-          Associate public subnets to public route table.
-				-          Associate public subnets to public route table.
-				-          Create bastion host for ssh purposes.
-				-          Create NAT instance for internet for private resources
-				-          Edit the public route table with new route.
- 
- 
+			
+				- Create a terraform automation that would create a locking state in S3.
+			
 		Prerequisites:
 			Computer with Windows Operating System
 			AWS account
         		Create one as a student for $100 free credit: https://www.awseducate.com/registration#APP_TYPE
  
 		Steps:
-			1. 
+		
+			When building a infrastructure with terraform config. It generates a file called terraform.tfstat.
+			The file contains information about the configurations inside the infrastructure.
+			This tutorial reader will help provide a lock remote terraform state file. If working in a team it is best to secure and store the terraform state files remotely
+		
+			1.  You will need to create a s3 bucket in the terraform config such as this one that we have used:
+			
+			# To store the state file in nad an terraform s3 backened resource.
+			
+				terraform {
+					backend "s3" {
+					bucket = "zephyrbuckets3"
+					key    = "terraform.tfstate"
+					dynamodb_table = "zephyrlock"
+
+					region = "us-west-2"
+					}
+				}
+
+			2. Then the backened resource is created 
+			
+			resource "aws_s3_bucket" "zephyrbucket" {
+			bucket = "zephyrbuckets3"
+
+				versioning {
+					enabled = true
+				}
+				lifecycle {
+					prevent_destroy = true
+				}
+			}
+			resource "aws_dynamodb_table" "zephyrlock" {
+				name = "zephyrlock"
+				hash_key = "LockID"
+				read_capacity = 20
+				write_capacity = 20
+ 
+				attribute {
+					name = "LockID"
+					type = "S"
+				}
+ 
+				tags {
+					Name = "DynamoDB Terraform State Lock Table"
+				}
+			}
+	
+			It is good to have a locking state so that if the state file is stored remotely in order for
+			Multiple people to access it. This prevents people from alternating the same file at a time creating corruption within the file.
