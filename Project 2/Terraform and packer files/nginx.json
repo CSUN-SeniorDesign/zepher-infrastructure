@@ -1,0 +1,73 @@
+{                                                                                     
+    "variables": {                                                                    
+      "name": "zephyr90done",                                                   
+      "source_ami": "ami-0e32ec5bc225539f5",                                          
+      "access_key":"",                                                                
+      "secret_key":"",                                                                
+      "region":"us-west-2"                                                            
+    },                                                                                
+    "builders": [{                                                                    
+      "type": "amazon-ebs",                                                           
+      "access_key": "{{user `access_key`}}",                                          
+      "secret_key":"{{user `secret_key`}}",                                           
+      "ami_name": "{{user `name`}}",                                                  
+      "region": "{{user `region`}}",                                                  
+      "source_ami": "{{user `source_ami`}}",                                          
+      "instance_type": "t2.micro",                                                    
+      "communicator": "ssh",                                                          
+      "ssh_username": "ubuntu",                                                       
+      "run_tags":{"Name":"packer-image"}                                              
+    }],                                                                               
+    "provisioners": [                                                                                                                                      
+                {                                                                     
+            "type": "file",                                                           
+            "source": "C:\\Users\\Neel\\.aws",                                        
+                        "destination" : "/home/ubuntu/.aws"                           
+        },  
+		{                                                                     
+            "type": "file",                                                           
+            "source": "C:\\Users\\Neel\\Downloads\\cmder\\bin\\packer\\conf.yaml",                                        
+                        "destination" : "/home/ubuntu/conf.yaml"                           
+        }, 
+		{                                                                     
+            "type": "file",                                                           
+            "source": "C:\\Users\\Neel\\Downloads\\cmder\\bin\\packer\\datadog.yaml",                                        
+                        "destination" : "/home/ubuntu/datadog.yaml"                           
+        },   
+		{                                                                     
+            "type": "file",                                                           
+            "source": "C:\\Users\\Neel\\Downloads\\cmder\\bin\\packer\\status.conf",                                        
+                        "destination" : "/home/ubuntu/status.conf"                           
+        },                                                                       
+                {                                                                     
+            "type": "file",                                                           
+            "source": "C:\\Users\\Neel\\Downloads\\cmder\\bin\\packer\\developwebsite.sh",   
+                        "destination" : "/home/ubuntu/developwebsite.sh"                     
+        },
+{                                                                     
+            "type": "file",                                                           
+            "source": "C:\\Users\\Neel\\Downloads\\cmder\\bin\\packer\\staging.sh",   
+                        "destination" : "/home/ubuntu/staging.sh"                     
+        }, 		
+        {                                                                             
+            "type": "shell",                                                          
+            "inline": ["sudo apt-get install nginx -y","sudo systemctl enable nginx", "sudo systemctl start nginx"]
+        },                                                                            
+        {                                                                             
+            "type": "shell",                                                          
+            "inline": ["sudo snap install aws-cli --classic","sudo chmod 755 ~/developwebsite.sh","sudo chmod 755 ~/staging.sh"]
+        },                                                                            
+                {                                                                     
+            "type": "shell",                                                          
+            "script" : "C:\\Users\\Neel\\Downloads\\cmder\\bin\\packer\\datadoginstall.sh"
+        },   
+		{                                                                     
+            "type": "shell",                                                          
+            "script" : "C:\\Users\\Neel\\Downloads\\cmder\\bin\\packer\\movingfiles.sh"
+        },   		
+                {                                                                     
+            "type": "shell",                                                          
+            "script" : "C:\\Users\\Neel\\Downloads\\cmder\\bin\\packer\\crontab.sh"   
+        }                                                                             
+      ]                                                                               
+  }                                                                                     
