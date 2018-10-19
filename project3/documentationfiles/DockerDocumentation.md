@@ -117,7 +117,7 @@ We will break down this beginning section of our Multi-stage image.
 ~~~
 FROM alpine:3.5 as build
 ~~~
-Grabs alpine version3.5 as our base image. This is then called "builder" so if you needed to reference (which will be needed) this somewhere else you can by calling "builder"
+Grabs alpine version3.5 as our base image. This is then called "build" so if you needed to reference (which will be needed) this somewhere else you can by calling "build"
 
 ~~~
 ENV HUGO_VERSION 0.49.1
