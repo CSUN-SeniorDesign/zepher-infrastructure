@@ -73,7 +73,7 @@ docker run hello-world
 ~~~
 If it properly runs you're ready to begin with the rest of this tutorial, otherwise you will need to troubleshoot and fix Docker.
 
-<h3> Docker with Hugo and Nginx</h3>
+<h3> Docker with Hugo</h3>
 We will dive into some advanced forms of containerization. Going from a regular container like you saw with the hello-world image to something called a Multi-Stage container. 
 
 Usually an image will contain one FROM statement to reference a base image that you will be using. In a Multi-Stage container you will be using multiple FROM statements to reference multiple base images at different points in your container.
