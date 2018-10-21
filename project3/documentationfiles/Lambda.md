@@ -54,3 +54,57 @@ This will create a basic Hello world Function. You can test it by clicking at th
 Selecting Hello world as a template and providing a name for it. Then click Create. Then click Test.
 
 This is a simplification of Lambda just using the Lambda Console.
+
+For our python script we have first used terraform in order to acquire to listen to an event:
+
+	- This will also grab the python function and use it.
+	
+	- Function Block to use the python script:
+		resource "aws_lambda_function" "update-staging" {
+		  filename         = "lambdastaging.zip"
+		  function_name    = "update-staging"
+		  role             = "${aws_iam_role.lambda.arn}"
+		  handler          = "update-staging.main"
+		  source_code_hash = "${base64sha256(file("lambdastaging.zip"))}"
+		  runtime          = "python3.6"
+		}
+	- Access to the S3 bucket:
+		resource "aws_lambda_permission" "allow_bucket" {
+		  statement_id  = "AllowExecutionFromS3Bucket"
+		  action        = "lambda:InvokeFunction"
+		  function_name = "${aws_lambda_function.update-staging.arn}"
+		  principal     = "s3.amazonaws.com"
+		  source_arn    = "${var.bucket-arn}"
+		}
+	- Event Listener or trigger for the AWS function:
+		resource "aws_s3_bucket_notification" "s3-bucket-notification" {
+		  bucket = "${aws_s3_bucket.zephyrbucketp3.id}"
+		  lambda_function{
+			lambda_function_arn = "${aws_lambda_function.update-staging.arn}"
+			events              = ["s3:ObjectCreated:*"]
+			filter_suffix       = ".txt"
+		  }
+		  
+		  }
+		  
+	Then you are required to use the python script in lambda aws and this is the script that you are going to need to have it working:
+	
+		import boto3
+		from pprint import pprint
+		client = boto3.client('ecs')
+
+
+		def main(event, context):
+			response = client.update_service(
+				cluster='zephyrecscluster',
+				service='test-http',
+				desiredCount=1,
+				taskDefinition='task1:8',
+				deploymentConfiguration={
+					'maximumPercent': 200,
+					'minimumHealthyPercent': 100
+				},
+				platformVersion='null',
+				forceNewDeployment=True,
+				healthCheckGracePeriodSeconds=60
+			)
